@@ -18,6 +18,10 @@ struct Args {
     #[arg(short)]
     l: bool,
 
+    /// The number of words in each input file is written to the standard output.
+    #[arg(short)]
+    w: bool,
+
     /// file
     #[arg(value_parser)]
     file: Input,
@@ -30,15 +34,22 @@ fn filepath(file: &Input) -> &str {
 fn main() -> io::Result<()> {
     let mut args = Args::parse();
 
-    let mut content = String::new();
-    args.file.get_file().unwrap().read_to_string(&mut content)?;
-    let lines = content.lines().count();
     if args.l {
+        let mut content = String::new();
+        args.file.get_file().unwrap().read_to_string(&mut content)?;
+        let lines = content.lines().count();
         print!("{:8}", lines);
     }
 
-    let len = args.file.len().unwrap();
+    if args.w {
+        let mut content = String::new();
+        args.file.get_file().unwrap().read_to_string(&mut content)?;
+        let words = content.split_whitespace().count();
+        print!("{:8}", words);
+    }
+
     if args.c {
+        let len = args.file.len().unwrap();
         print!("{:8}", len);
     }
 
