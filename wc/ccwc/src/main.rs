@@ -43,25 +43,45 @@ fn content(file: &mut Input) -> io::Result<String> {
 
 fn main() -> io::Result<()> {
     let mut args = Args::parse();
+    let content = content(&mut args.file)?;
 
-    if args.l {
-        let content = content(&mut args.file)?;
-        print!("{:8}", content.lines().count());
-    }
+    if !args.l && !args.w && !args.m && !args.c {
+        print_l(&content);
+        print_w(&content);
+        print_c(&args);
+    } else {
+        if args.l {
+            print_l(&content);
+        }
 
-    if args.w {
-        let content = content(&mut args.file)?;
-        print!("{:8}", content.split_whitespace().count());
-    }
+        if args.w {
+            print_w(&content);
+        }
 
-    if args.m {
-        let content = content(&mut args.file)?;
-        print!("{:8}", content.chars().count());
-    } else if args.c {
-        let len = args.file.len().unwrap();
-        print!("{:8}", len);
+        if args.m {
+            print_m(&content);
+        } else if args.c {
+            print_c(&args);
+        }
     }
 
     println!(" {}", filepath(&args.file));
     Ok(())
+}
+
+fn print_c(args: &Args) {
+    let len = args.file.len().unwrap();
+    print!("{:8}", len);
+}
+
+fn print_m(content: &String) {
+    print!("{:8}", content.chars().count());
+}
+
+fn print_w(content: &String) {
+    print!("{:8}", content.split_whitespace().count());
+}
+
+fn print_l(content: &String) {
+    print!("{:8}", content.lines().count());
 }
