@@ -27,28 +27,37 @@ struct Args {
     m: bool,
 
     /// file
-    #[arg(value_parser)]
+    #[arg(value_parser, default_value = "-")]
     file: Input,
 }
 
-fn filepath(file: &Input) -> &str {
-    file.path().to_str().unwrap()
+fn filepath(file: &Input) -> String {
+    if file.is_std() {
+        String::new()
+    } else {
+        file.path().to_str().unwrap().to_owned()
+    }
 }
 
 fn content(file: &mut Input) -> io::Result<String> {
     let mut content = String::new();
-    file.get_file().unwrap().read_to_string(&mut content)?;
+    file.read_to_string(&mut content)?;
     Ok(content)
 }
 
+fn data(mut file: Input) -> io::Result<(String, String)> {
+    let content = content(&mut file)?;
+    Ok((content, filepath(&file)))
+}
+
 fn main() -> io::Result<()> {
-    let mut args = Args::parse();
-    let content = content(&mut args.file)?;
+    let args = Args::parse();
+    let (content, filepath) = data(args.file)?;
 
     if !args.l && !args.w && !args.m && !args.c {
         print_l(&content);
         print_w(&content);
-        print_c(&args);
+        print_c(&content);
     } else {
         if args.l {
             print_l(&content);
@@ -61,17 +70,16 @@ fn main() -> io::Result<()> {
         if args.m {
             print_m(&content);
         } else if args.c {
-            print_c(&args);
+            print_c(&content);
         }
     }
 
-    println!(" {}", filepath(&args.file));
+    println!(" {}", filepath);
     Ok(())
 }
 
-fn print_c(args: &Args) {
-    let len = args.file.len().unwrap();
-    print!("{:8}", len);
+fn print_c(content: &String) {
+    print!("{:8}", content.len());
 }
 
 fn print_m(content: &String) {
