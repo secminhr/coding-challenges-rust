@@ -1,3 +1,8 @@
+use std::{
+    fmt::Debug,
+    io::{self, Read},
+};
+
 use clap::Parser;
 use clio::Input;
 
@@ -18,12 +23,25 @@ struct Args {
     file: Input,
 }
 
-fn main() {
-    let args = Args::parse();
+fn filepath(file: &Input) -> &str {
+    file.path().to_str().unwrap()
+}
+
+fn main() -> io::Result<()> {
+    let mut args = Args::parse();
+
+    let mut content = String::new();
+    args.file.get_file().unwrap().read_to_string(&mut content)?;
+    let lines = content.lines().count();
+    if args.l {
+        print!("{:8}", lines);
+    }
+
     let len = args.file.len().unwrap();
-    // println!(
-    //     "{} {}",
-    //     len,
-    //     args.file.path().file_name().unwrap().to_str().unwrap()
-    // );
+    if args.c {
+        print!("{:8}", len);
+    }
+
+    println!(" {}", filepath(&args.file));
+    Ok(())
 }
